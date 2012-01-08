@@ -1,3 +1,4 @@
+require 'liquid'
 module Jekyll
 
   class Converter < Plugin
@@ -45,6 +46,18 @@ module Jekyll
     def pygments_suffix
       self.class.pygments_suffix
     end
+    
+    def convert(content, scope = nil, locals = {}, &block)
+      content = format(content)
+      info = { :filters => scope, :registers => { :site => locals['site'] } }
+      locals['content'] = yield if block_given?
+      Liquid::Template.parse(content).render(locals, info)
+    end
+    
+    def format(content)
+      content
+    end
+    
   end
 
 end

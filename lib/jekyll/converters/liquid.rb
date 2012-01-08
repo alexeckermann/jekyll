@@ -1,18 +1,16 @@
 module Jekyll
-
-  class IdentityConverter < Converter
+  
+  class LiquidConverter < Converter
     safe true
 
-    priority :lowest
-
     def matches(ext)
-      true
+      ext =~ /html|liquid/i
     end
 
     def output_ext(ext)
-      ext
+      ".html"
     end
-
+    
   end
 
 end

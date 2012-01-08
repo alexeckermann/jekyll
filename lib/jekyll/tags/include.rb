@@ -6,9 +6,9 @@ module Jekyll
       @file = file.strip
     end
 
-    def render(context)
-      includes_dir = File.join(context.registers[:site].source, '_includes')
-
+    def render(context = nil)
+      includes_dir = File.join(context.registers[:site]["source"], '_includes')
+      
       if File.symlink?(includes_dir)
         return "Includes directory '#{includes_dir}' cannot be a symlink"
       end
@@ -20,10 +20,9 @@ module Jekyll
       Dir.chdir(includes_dir) do
         choices = Dir['**/*'].reject { |x| File.symlink?(x) }
         if choices.include?(@file)
-          source = File.read(@file)
-          partial = Liquid::Template.parse(source)
+          partial = Jekyll::Partial.new(context.registers[:site], context, includes_dir, File.basename(@file))
           context.stack do
-            partial.render(context)
+            partial.render
           end
         else
           "Included file '#{@file}' not found in _includes directory"

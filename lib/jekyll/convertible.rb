@@ -35,15 +35,16 @@ module Jekyll
           puts "YAML Exception reading #{name}: #{e.message}"
         end
       end
-
+      
       self.data ||= {}
     end
 
     # Transform the contents based on the content type.
     #
     # Returns nothing.
-    def transform
-      self.content = converter.convert(self.content)
+    def transform #(scope = nil, locals = {})
+      # locals = { 'page' => self.data }.deep_merge(locals)
+      self.content = converter.format(self.content)
     end
 
     # Determine the extension depending on content_type.
@@ -68,45 +69,35 @@ module Jekyll
     # layouts - A Hash of {"name" => "layout"}.
     #
     # Returns nothing.
-    def do_layout(payload, layouts)
-      info = { :filters => [Jekyll::Filters], :registers => { :site => self.site } }
-
-      # render and transform content (this becomes the final content of the object)
-      payload["pygments_prefix"] = converter.pygments_prefix
-      payload["pygments_suffix"] = converter.pygments_suffix
-
-      begin
-        self.content = Liquid::Template.parse(self.content).render(payload, info)
-      rescue => e
-        puts "Liquid Exception: #{e.message} in #{self.name}"
-      end
-
-      self.transform
-
-      # output keeps track of what will finally be written
-      self.output = self.content
-
-      # recursively render layouts
-      layout = layouts[self.data["layout"]]
-      used = Set.new([layout])
-
-      while layout
-        payload = payload.deep_merge({"content" => self.output, "page" => layout.data})
-
-        begin
-          self.output = Liquid::Template.parse(layout.content).render(payload, info)
-        rescue => e
-          puts "Liquid Exception: #{e.message} in #{self.data["layout"]}"
-        end
-
-        if layout = layouts[layout.data["layout"]]
-          if used.include?(layout)
-            layout = nil # avoid recursive chain
-          else
-            used << layout
-          end
-        end
-      end
+    def do_layout(layout_payload, layouts)
+      
+      self.output = self.render_layout([Jekyll::Filters], layout_payload, layouts)
+      
     end
+    
+    # Recursively render the layout with the appropriate ambiguous converter
+    #
+    # layouts - The Jekyll::Layout objects we are operating on
+    # scope - All out lovely filters and nick-nacks, as an Array
+    # locals - The variables accessible to the layout
+    # block - any child content we can render
+    #
+    # Returns nothing, does operate a recursive loop
+    def render_layout(scope = [], locals = {}, layouts = {}, &block)
+      
+      if layouts.include?(self.data["layout"])
+        # Loop into the parent layout
+        layout = layouts[self.data["layout"]]
+        layouts.delete(layout.data["layout"])
+        
+        return layout.render_layout(scope, locals, layouts) do
+          converter.convert(self.content, scope, locals)
+        end
+      end
+
+      # Render this layout, it has no parent!
+      self.converter.convert(self.content, scope, locals, &block)
+    end
+    
   end
 end

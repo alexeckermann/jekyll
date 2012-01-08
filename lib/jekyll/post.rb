@@ -181,10 +181,12 @@ module Jekyll
     # Returns nothing
     def render(layouts, site_payload)
       # construct payload
-      payload = {
+      payload = self.site.site_payload.deep_merge({
         "site" => { "related_posts" => related_posts(site_payload["site"]["posts"]) },
-        "page" => self.to_liquid
-      }.deep_merge(site_payload)
+        "page" => self.to_hash
+      })
+      
+      payload = payload.deep_merge(site_payload)
 
       do_layout(payload, layouts)
     end
@@ -215,7 +217,7 @@ module Jekyll
     # Convert this post into a Hash for use in Liquid templates.
     #
     # Returns <Hash>
-    def to_liquid
+    def to_hash
       self.data.deep_merge({
         "title"      => self.data["title"] || self.slug.split('-').select {|w| w.capitalize! || w }.join(' '),
         "url"        => self.url,
@@ -226,6 +228,18 @@ module Jekyll
         "previous"   => self.previous,
         "tags"       => self.tags,
         "content"    => self.content })
+    end
+    alias_method :to_liquid, :to_hash
+    alias_method :to_h, :to_hash
+    
+    def method_missing(meth, *args, &block)
+      if self.data.include? meth.to_s
+        self.data[meth.to_s]
+      elsif args.empty? and not block_given?
+        nil
+      else
+        super
+      end
     end
 
     def inspect

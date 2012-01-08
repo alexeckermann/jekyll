@@ -1,11 +1,12 @@
 module Jekyll
 
   class TextileConverter < Converter
+    
     safe true
-
+    
     pygments_prefix '<notextile>'
     pygments_suffix '</notextile>'
-
+    
     def setup
       return if @setup
       require 'redcloth'
@@ -25,10 +26,11 @@ module Jekyll
       ".html"
     end
 
-    def convert(content)
+    def format(content)
       setup
       RedCloth.new(content).to_html
     end
+    
   end
 
 end

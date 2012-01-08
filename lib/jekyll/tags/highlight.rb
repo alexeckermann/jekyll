@@ -1,4 +1,4 @@
-module Jekyll
+  module Jekyll
 
   class HighlightBlock < Liquid::Block
     include Liquid::StandardFilters

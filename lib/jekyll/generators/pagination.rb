@@ -66,7 +66,7 @@ module Jekyll
     #
     # Returns true if pagination is enabled, false otherwise.
     def self.pagination_enabled?(config, file)
-      file == 'index.html' && !config['paginate'].nil?
+      file =~ /^index\./ && !config['paginate'].nil?
     end
 
     # Initialize a new Pager.
@@ -97,7 +97,7 @@ module Jekyll
     # Convert this Pager's data to a Hash suitable for use by Liquid.
     #
     # Returns the Hash representation of this Pager.
-    def to_liquid
+    def to_hash
       {
         'page' => page,
         'per_page' => per_page,
@@ -108,6 +108,8 @@ module Jekyll
         'next_page' => next_page
       }
     end
+    alias_method :to_liquid, :to_hash
+    
   end
 
 end

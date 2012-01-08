@@ -5,7 +5,7 @@ module Jekyll
 
     pygments_prefix "\n"
     pygments_suffix "\n"
-
+    
     def setup
       return if @setup
       # Set the Markdown interpreter (and Maruku self.config, if necessary)
@@ -84,7 +84,7 @@ module Jekyll
       ".html"
     end
 
-    def convert(content)
+    def format(content)
       setup
       case @config['markdown']
         when 'redcarpet'
@@ -120,6 +120,7 @@ module Jekyll
           Maruku.new(content).to_html
       end
     end
+    
   end
 
 end

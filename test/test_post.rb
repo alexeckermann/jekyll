@@ -1,4 +1,5 @@
 require 'helper'
+require 'ruby-debug'
 
 class TestPost < Test::Unit::TestCase
   def setup_post(file)
@@ -371,6 +372,7 @@ class TestPost < Test::Unit::TestCase
         should "include templates" do
           post = setup_post("2008-12-13-include.markdown")
           post.site.source = File.join(File.dirname(__FILE__), 'source')
+          debugger
           do_render(post)
 
           assert_equal "<<< <hr />\n<p>Tom Preston-Werner github.com/mojombo</p>\n\n<p>This <em>is</em> cool</p> >>>", post.output
